@@ -910,8 +910,16 @@ video {
   padding-top: 0.5rem;
 }
 
+.pt-20 {
+  padding-top: 5rem;
+}
+
 .pt-32 {
   padding-top: 8rem;
+}
+
+.pt-4 {
+  padding-top: 1rem;
 }
 
 .pt-5 {
@@ -924,18 +932,6 @@ video {
 
 .pt-\[3px\] {
   padding-top: 3px;
-}
-
-.pl-32 {
-  padding-left: 8rem;
-}
-
-.pt-4 {
-  padding-top: 1rem;
-}
-
-.pt-20 {
-  padding-top: 5rem;
 }
 
 .text-center {
@@ -1077,11 +1073,6 @@ video {
 
 .hover\:shadow-gray-500:hover {
   --tw-shadow-color: #6b7280;
-  --tw-shadow: var(--tw-shadow-colored);
-}
-
-.hover\:shadow-gray-800:hover {
-  --tw-shadow-color: #1f2937;
   --tw-shadow: var(--tw-shadow-colored);
 }
 
