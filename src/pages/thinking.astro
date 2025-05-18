@@ -1,5 +1,5 @@
 ---
-const allPosts = await Astro.glob('./*.md');
+const allPosts = await Astro.glob('./posts/*.md');
 const latestPosts = allPosts
   .map(post => ({
     ...post.frontmatter,
@@ -76,7 +76,7 @@ const reviewPosts = allPosts
   <div class=" col-span-4 bg-gray-200 ml-[500px] mr-[100px] rounded-lg shadow-lg p-5 hover:bg-primary-focus hover:shadow-gray-500">
     <!-- Categories navigation -->
     <div class="flex space-x-6 mb-8 text-gray-700 font-medium">
-      <a href="../posts/latest" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
+      <a href="/latest" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
         <div class="font-bold text-2xl content-center items-center pl-6 pt-2">
           最新
         </div>
@@ -86,17 +86,17 @@ const reviewPosts = allPosts
           随想
         </div>
       </a>
-      <a href="../posts/life" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
+      <a href="/life" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
         <div class="font-bold text-2xl content-center items-center pl-6 pt-2">
           生活
         </div>
       </a>
-      <a href="../posts/tech" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
+      <a href="/tech" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
         <div class="font-bold text-2xl content-center items-center pl-6 pt-2">
           技术
         </div>
       </a>
-      <a href="../posts/review" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
+      <a href="/review" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
         <div class="font-bold text-2xl content-center items-center pl-6 pt-2">
           评测
         </div>
