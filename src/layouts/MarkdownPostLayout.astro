@@ -1,5 +1,6 @@
 ---
 const { frontmatter } = Astro.props;
+import MusicPlayer from "../components/MusicPlayer.astro";
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -11,6 +12,14 @@ const { frontmatter } = Astro.props;
 </head>
 
 <body class="bg-gray-50 bg-cover bg-no-repeat bg-fixed">
+    <div class="fixed bottom-8 right-8 z-[9999]">
+    <MusicPlayer 
+    audioSrc="../8_31.mp3"
+    coverSrc="../yorushika.jpg"
+    title="8/31"
+    artist="Yorushika"
+  />
+  </div>
     <div class="pl-5 pt-5 font-bold text-xl text-gray-400 grid grid-cols-10 items-center">
         <div class="text-gray-400 col-span-1 text-center col-start-1">Qingke</div>
         <div class="text-gray-400 col-span-1 text-center col-start-3 hover:text-gray-500 flex items-center gap-2"> <!-- 新增 flex 布局 -->
