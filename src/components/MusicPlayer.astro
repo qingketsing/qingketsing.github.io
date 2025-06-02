@@ -6,8 +6,7 @@ interface Props {
   artist?: string;
 }
 import '../../public/output.css';
-import audioFile from '../../public/8_31.mp3';
-import coverImage from '../../public/yorushika.jpg';
+
 ---
 
 <style>
@@ -35,7 +34,7 @@ import coverImage from '../../public/yorushika.jpg';
         }
     </style>
 <!-- 固定定位容器 -->
-<audio id="audio-player" src={audioFile}></audio>
+<audio id="audio-player" src="/8_31.mp3"></audio>
     
     <!-- 耳机入口按钮 -->
     <div class="fixed bottom-8 right-8 z-50">
@@ -50,7 +49,7 @@ import coverImage from '../../public/yorushika.jpg';
         <div id="player-popup" class="player-popup absolute bottom-full right-0 mb-4 w-72 bg-white rounded-xl shadow-2xl overflow-hidden">
             <!-- 封面和歌曲信息 -->
             <div class="relative">
-                <img src={audioFile} alt="专辑封面" class="w-full h-40 object-cover">
+                <img src="/yorushika.jpg" alt="专辑封面" class="w-full h-40 object-cover">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div class="absolute bottom-4 left-4 right-4">
                     <h3 class="text-white font-bold text-lg truncate">8/31</h3>
