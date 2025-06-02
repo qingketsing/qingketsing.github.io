@@ -683,11 +683,6 @@ video {
   display: grid;
 }
 
-.size-6 {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
 .h-10 {
   height: 2.5rem;
 }
@@ -756,6 +751,10 @@ video {
   height: 100%;
 }
 
+.h-\[6px\] {
+  height: 6px;
+}
+
 .w-14 {
   width: 3.5rem;
 }
@@ -790,6 +789,10 @@ video {
 
 .w-\[900px\] {
   width: 900px;
+}
+
+.w-\[6px\] {
+  width: 6px;
 }
 
 .min-w-full {
