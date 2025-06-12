@@ -172,17 +172,18 @@ const latestPosts = allPosts
         ))
       }
 
-      <div class="pt-[3px]"></div>
+     
+      <!--查看更多div，靠白框的右下角用dev模仿一个按钮，外部为gray-200，hover之后变为400-->
+      <div class="flex justify-end">
+        <a href="/latest" class="text-gray-600 hover:text-primary font-semibold">
+          <div class="w-[100px] h-[40px] bg-gray-200 rounded-lg shadow-md hover:bg-gray-400 flex items-center justify-center transition duration-300">
+            <span class="text-lg">查看更多</span>
+          </div>
+        </a>
     </div>
-    <!-- "查看更多" link -->
-    <a href="/latest" class=" w-[100px] h-[50px] bg-white rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
-      <div class="font-bold text-2xl content-center items-center pl-[650px]">
-        <div class="bg-white w-30 h-10 rounded-lg hover:shadow-gray-500 pl-2 pt-1 hover:-translate-y-0.5">点我可以看更多喵~</div>
-      </div>
-    </a>
   </div>
-  <div class="pt-10 xl:pt-10"></div>
-  
+  </div>
+  <div class="pt-12 xl:pt-28"></div>
   <div class="h-[100px] col-span-4 bg-white ml-[500px] mr-[100px] rounded-lg p-5 ">
     <!-- 增强版实现 -->
     <div class="flex justify-center items-start h-full relative group">
@@ -192,7 +193,6 @@ const latestPosts = allPosts
       </div>      
     </div>
   </div>
-  
   <div class="h-[600px] col-span-4 bg-white ml-[500px] mr-[100px] rounded-lg p-5 ">
     <div class="grid grid-cols-3 gap-6">
       <div class="bg-gray-100 h-[200px] rounded-lg shadow-md p-4 hover:bg-primary-focus hover:shadow-gray-500 duration-300 hover:scale-105
@@ -234,10 +234,6 @@ const latestPosts = allPosts
         <p class="text-gray-600">但是我可以先占个空</p>
       </div>
   </div>
-
-
-  <div class="pt-12 xl:pt-28"></div>
-
   
 </body>
 </html>
