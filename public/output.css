@@ -1213,8 +1213,8 @@ video {
   padding-left: 1.5rem;
 }
 
-.pl-\[180px\] {
-  padding-left: 180px;
+.pl-\[5\%\] {
+  padding-left: 5%;
 }
 
 .pl-\[60px\] {
@@ -1267,10 +1267,6 @@ video {
 
 .pt-\[3px\] {
   padding-top: 3px;
-}
-
-.pl-\[5\%\] {
-  padding-left: 5%;
 }
 
 .text-center {
