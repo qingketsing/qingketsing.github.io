@@ -1,6 +1,10 @@
 ---
 const { frontmatter } = Astro.props;
 import MusicPlayer from "../components/MusicPlayer.astro";
+
+// 从frontmatter中提取音乐配置
+const musicConfig = frontmatter.music;
+const shouldShowPlayer = musicConfig && musicConfig.audioSrc;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -9,17 +13,91 @@ import MusicPlayer from "../components/MusicPlayer.astro";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{frontmatter.title}</title>
     <link href="/output.css" rel="stylesheet">
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+    <style>
+        /* 增加换行标签的间距 */
+        .prose br {
+            display: block;
+            margin-top: 1.5em;
+            margin-bottom: 1.5em;
+            content: "";
+        }
+        
+        /* 段落首行缩进2个字符 */
+        .prose p {
+            text-indent: 2em;
+            margin-bottom: 1.5em;
+        }
+        
+        /* 处理<br>后的内容缩进 */
+        .prose br + * {
+            text-indent: 2em;
+        }
+        
+        /* 增加列表项之间的间距 */
+        .prose li {
+            margin-bottom: 0.75em;
+        }
+        
+        /* 列表内的段落不需要缩进 */
+        .prose li p {
+            text-indent: 0;
+        }
+        
+        /* 增加标题与段落之间的间距 */
+        .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+            margin-top: 2.5em;
+            margin-bottom: 1.5em;
+        }
+        
+        /* 第一个标题的上边距不需要太大 */
+        .prose h1:first-child, .prose h2:first-child, .prose h3:first-child {
+            margin-top: 0;
+        }
+        
+        /* 引用块内的段落不需要缩进 */
+        .prose blockquote p {
+            text-indent: 0;
+        }
+        
+        /* KaTeX 数学公式样式 */
+        .prose .katex {
+            font-size: 1.1em;
+        }
+        
+        /* 行内数学公式 */
+        .prose .katex-inline {
+            font-size: inherit;
+        }
+        
+        /* 块级数学公式 */
+        .prose .katex-display {
+            margin: 2em 0;
+            text-align: center;
+        }
+        
+        /* 数学公式不需要缩进 */
+        .prose .katex-display,
+        .prose .katex {
+            text-indent: 0;
+        }
+    </style>
+    
 </head>
 
 <body class="bg-gray-50 bg-cover bg-no-repeat bg-fixed">
-    <div class="fixed bottom-8 right-8 z-[9999]">
-    <MusicPlayer 
-    audioSrc="../8_31.mp3"
-    coverSrc="../yorushika.jpg"
-    title="8/31"
-    artist="Yorushika"
-  />
-  </div>
+    <!-- 只有当文章配置了音乐时才显示播放器 -->
+    {shouldShowPlayer && (
+        <div class="fixed bottom-8 right-8 z-[9999]">
+            <MusicPlayer 
+                audioSrc={musicConfig.audioSrc}
+                coverSrc={musicConfig.coverSrc}
+                title={musicConfig.title}
+                artist={musicConfig.artist}
+            />
+        </div>
+    )}
     <div class="pl-5 pt-5 font-bold text-xl text-gray-400 grid grid-cols-10 items-center">
         <div class="text-gray-400 col-span-1 text-center col-start-1">Qingke</div>
         <div class="text-gray-400 col-span-1 text-center col-start-3 hover:text-gray-500 flex items-center gap-2"> <!-- 新增 flex 布局 -->
@@ -72,7 +150,7 @@ import MusicPlayer from "../components/MusicPlayer.astro";
   <div class="w-full md:w-[70%] px-4 md:px-8">
     <div class="bg-blue-100 rounded-lg bg-opacity-40">
       <div class="pt-10"></div>
-      <div class="px-6 pt-5 text-base text-gray-900">
+      <div class="px-6 pt-5 prose prose-lg max-w-none text-gray-900">
         <slot />
       </div>
       <div class="pt-10"></div>
@@ -111,6 +189,39 @@ import MusicPlayer from "../components/MusicPlayer.astro";
   </aside>
 </div>
     <div class="pt-32"></div>
+    
+    <!-- KaTeX JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js" integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+    <!-- KaTeX auto-render -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+    
+    <!-- KaTeX 自动渲染脚本 -->
+    <script is:inline>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 多重保险渲染方式
+            function renderMath() {
+                if (window.renderMathInElement) {
+                    try {
+                        renderMathInElement(document.body, {
+                            delimiters: [
+                                {left: '$$', right: '$$', display: true},
+                                {left: '$', right: '$', display: false}
+                            ],
+                            throwOnError: false
+                        });
+                        console.log('KaTeX渲染成功');
+                    } catch (e) {
+                        console.error('KaTeX渲染失败:', e);
+                    }
+                } else {
+                    setTimeout(renderMath, 100);
+                }
+            }
+            
+            // 延迟执行
+            setTimeout(renderMath, 500);
+        });
+    </script>
             
 </body>
 </html>
