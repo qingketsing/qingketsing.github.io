@@ -8,9 +8,27 @@ interface Props {
 
 const { audioSrc, coverSrc, title, artist } = Astro.props;
 
-// 设置默认值
-const finalAudioSrc = audioSrc || '/8_31.mp3';
-const finalCoverSrc = coverSrc || '/yorushika.jpg';
+// 获取站点URL用于构建绝对路径
+const siteUrl = Astro.site?.href || '';
+const basePath = import.meta.env.BASE_URL || '/';
+
+// 构建绝对路径的辅助函数
+function buildAbsolutePath(path: string): string {
+  if (!path) return '';
+  if (path.startsWith('http')) return path; // 已经是绝对URL
+  if (path.startsWith('/')) {
+    // 如果是GitHub Pages部署，需要添加完整的域名
+    if (siteUrl && !siteUrl.includes('localhost')) {
+      return siteUrl.replace(/\/$/, '') + path;
+    }
+    return path;
+  }
+  return path;
+}
+
+// 设置默认值并构建绝对路径
+const finalAudioSrc = buildAbsolutePath(audioSrc || '/8_31.mp3');
+const finalCoverSrc = buildAbsolutePath(coverSrc || '/yorushika.jpg');
 const finalTitle = title || '8/31';
 const finalArtist = artist || 'Yorushika';
 ---
@@ -119,14 +137,15 @@ const finalArtist = artist || 'Yorushika';
 
     <script>
         // 获取音频元素
-        const audioPlayer = document.getElementById('audio-player');
+        const audioPlayer = document.getElementById('audio-player') as HTMLAudioElement;
         
         // 播放器状态
         const playerState = {
             isPlaying: false,
             currentTime: 0,
             duration: 114, // 1:54 in seconds
-            volume: 1.0
+            volume: 1.0,
+            lastVolume: 0.5
         };
         
         // DOM 元素
@@ -145,97 +164,140 @@ const finalArtist = artist || 'Yorushika';
         const waveContainer = document.getElementById('wave-container');
         const waves = document.querySelectorAll('.wave');
         
-        // 初始化音频设置
-        audioPlayer.volume = playerState.volume;
-        
-        // 当音频元数据加载完成后
-        audioPlayer.addEventListener('loadedmetadata', () => {
-            playerState.duration = audioPlayer.duration;
-            durationEl.textContent = formatTime(playerState.duration);
-        });
+        // 检查音频元素是否存在
+        if (!audioPlayer) {
+            console.error('音频播放器元素未找到');
+        } else {
+            // 初始化音频设置
+            audioPlayer.volume = playerState.volume;
+            
+            // 音频加载错误处理
+            audioPlayer.addEventListener('error', (e) => {
+                console.error('音频加载失败:', e);
+                console.error('音频源:', audioPlayer.src);
+                // 可以在这里添加用户友好的错误提示
+                if (durationEl) {
+                    durationEl.textContent = '加载失败';
+                }
+            });
+            
+            // 音频可以播放时
+            audioPlayer.addEventListener('canplay', () => {
+                console.log('音频可以播放');
+            });
+            
+            // 当音频元数据加载完成后
+            audioPlayer.addEventListener('loadedmetadata', () => {
+                playerState.duration = audioPlayer.duration;
+                if (durationEl) {
+                    durationEl.textContent = formatTime(playerState.duration);
+                }
+                console.log('音频时长:', playerState.duration, '秒');
+            });
+            
+            // 预加载音频以便获取元数据
+            audioPlayer.preload = 'metadata';
+        }
         
         // 音频时间更新事件
         audioPlayer.addEventListener('timeupdate', () => {
             playerState.currentTime = audioPlayer.currentTime;
             const percent = (playerState.currentTime / playerState.duration) * 100;
-            progressBar.style.width = `${percent}%`;
-            currentTimeEl.textContent = formatTime(playerState.currentTime);
+            if (progressBar) {
+                progressBar.style.width = `${percent}%`;
+            }
+            if (currentTimeEl) {
+                currentTimeEl.textContent = formatTime(playerState.currentTime);
+            }
         });
         
         // 音频播放结束事件
         audioPlayer.addEventListener('ended', () => {
             playerState.isPlaying = false;
-            const icon = playBtn.querySelector('i');
-            icon.classList.remove('fa-pause');
-            icon.classList.add('fa-play');
+            const playButton = playBtn?.querySelector('i');
+            if (playButton) {
+                playButton.classList.remove('fa-pause');
+                playButton.classList.add('fa-play');
+            }
             
             // 停止音波动画
             waves.forEach(wave => {
-                wave.style.animationPlayState = 'paused';
+                (wave as HTMLElement).style.animationPlayState = 'paused';
             });
         });
         
         // 切换播放器显示/隐藏
-        playerToggle.addEventListener('click', (e) => {
+        playerToggle?.addEventListener('click', (e) => {
             e.stopPropagation();
-            playerPopup.classList.toggle('show');
+            playerPopup?.classList.toggle('show');
         });
         
         // 点击页面其他地方关闭播放器
         document.addEventListener('click', () => {
-            playerPopup.classList.remove('show');
+            playerPopup?.classList.remove('show');
         });
         
         // 阻止播放器内部点击事件冒泡
-        playerPopup.addEventListener('click', (e) => {
+        playerPopup?.addEventListener('click', (e) => {
             e.stopPropagation();
         });
         
         // 播放/暂停
-        playBtn.addEventListener('click', () => {
+        playBtn?.addEventListener('click', () => {
             playerState.isPlaying = !playerState.isPlaying;
             
             const icon = playBtn.querySelector('i');
-            icon.classList.toggle('fa-pause');
-            icon.classList.toggle('fa-play');
+            if (icon) {
+                icon.classList.toggle('fa-pause');
+                icon.classList.toggle('fa-play');
+            }
             
             // 控制音波动画
             waves.forEach(wave => {
                 if(playerState.isPlaying) {
-                    wave.style.animationPlayState = 'running';
+                    (wave as HTMLElement).style.animationPlayState = 'running';
                 } else {
-                    wave.style.animationPlayState = 'paused';
+                    (wave as HTMLElement).style.animationPlayState = 'paused';
                 }
             });
             
             // 控制音频播放
             if(playerState.isPlaying) {
-                audioPlayer.play();
+                audioPlayer.play().catch(error => {
+                    console.error('播放失败:', error);
+                    playerState.isPlaying = false;
+                    if (icon) {
+                        icon.classList.remove('fa-pause');
+                        icon.classList.add('fa-play');
+                    }
+                });
             } else {
                 audioPlayer.pause();
             }
         });
         
         // 上一曲 (示例功能，需要你有多个音频文件)
-        prevBtn.addEventListener('click', () => {
+        prevBtn?.addEventListener('click', () => {
             // 这里可以添加播放列表和切换上一曲的逻辑
             console.log('上一曲');
         });
         
         // 下一曲 (示例功能，需要你有多个音频文件)
-        nextBtn.addEventListener('click', () => {
+        nextBtn?.addEventListener('click', () => {
             // 这里可以添加播放列表和切换下一曲的逻辑
             console.log('下一曲');
         });
         
         // 音量控制
-        volumeContainer.addEventListener('click', (e) => {
+        volumeContainer?.addEventListener('click', (e: MouseEvent) => {
             const width = volumeContainer.clientWidth;
             const clickX = e.offsetX;
             const volume = clickX / width;
             
             playerState.volume = Math.max(0, Math.min(1, volume));
-            volumeBar.style.width = `${playerState.volume * 100}%`;
+            if (volumeBar) {
+                volumeBar.style.width = `${playerState.volume * 100}%`;
+            }
             audioPlayer.volume = playerState.volume;
             
             // 更新音量图标
@@ -243,19 +305,23 @@ const finalArtist = artist || 'Yorushika';
         });
         
         // 进度条控制
-        progressContainer.addEventListener('click', (e) => {
+        progressContainer?.addEventListener('click', (e: MouseEvent) => {
             const width = progressContainer.clientWidth;
             const clickX = e.offsetX;
             const percent = clickX / width;
             
             playerState.currentTime = percent * playerState.duration;
             audioPlayer.currentTime = playerState.currentTime;
-            progressBar.style.width = `${percent * 100}%`;
-            currentTimeEl.textContent = formatTime(playerState.currentTime);
+            if (progressBar) {
+                progressBar.style.width = `${percent * 100}%`;
+            }
+            if (currentTimeEl) {
+                currentTimeEl.textContent = formatTime(playerState.currentTime);
+            }
         });
         
         // 静音/取消静音
-        volumeBtn.addEventListener('click', () => {
+        volumeBtn?.addEventListener('click', () => {
             if(playerState.volume > 0) {
                 playerState.lastVolume = playerState.volume;
                 playerState.volume = 0;
@@ -263,29 +329,33 @@ const finalArtist = artist || 'Yorushika';
                 playerState.volume = playerState.lastVolume || 0.5;
             }
             
-            volumeBar.style.width = `${playerState.volume * 100}%`;
+            if (volumeBar) {
+                volumeBar.style.width = `${playerState.volume * 100}%`;
+            }
             audioPlayer.volume = playerState.volume;
             updateVolumeIcon();
         });
         
         // 更新音量图标
         function updateVolumeIcon() {
-            const icon = volumeBtn.querySelector('i');
+            const icon = volumeBtn?.querySelector('i');
             
-            if(playerState.volume === 0) {
-                icon.classList.remove('fa-volume-up', 'fa-volume-down');
-                icon.classList.add('fa-volume-mute');
-            } else if(playerState.volume < 0.5) {
-                icon.classList.remove('fa-volume-up', 'fa-volume-mute');
-                icon.classList.add('fa-volume-down');
-            } else {
-                icon.classList.remove('fa-volume-down', 'fa-volume-mute');
-                icon.classList.add('fa-volume-up');
+            if(icon) {
+                if(playerState.volume === 0) {
+                    icon.classList.remove('fa-volume-up', 'fa-volume-down');
+                    icon.classList.add('fa-volume-mute');
+                } else if(playerState.volume < 0.5) {
+                    icon.classList.remove('fa-volume-up', 'fa-volume-mute');
+                    icon.classList.add('fa-volume-down');
+                } else {
+                    icon.classList.remove('fa-volume-down', 'fa-volume-mute');
+                    icon.classList.add('fa-volume-up');
+                }
             }
         }
         
         // 格式化时间 (秒 -> MM:SS)
-        function formatTime(seconds) {
+        function formatTime(seconds: number): string {
             const mins = Math.floor(seconds / 60);
             const secs = Math.floor(seconds % 60);
             return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
