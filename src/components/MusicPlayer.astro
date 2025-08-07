@@ -87,8 +87,11 @@ const finalArtist = artist || 'Yorushika';
                     <span id="current-time">0:00</span>
                     <span id="duration">0:00</span>
                 </div>
-                <div class="h-1.5 bg-gray-200 rounded-full cursor-pointer" id="progress-container">
-                    <div class="h-1.5 bg-indigo-500 rounded-full relative" id="progress-bar" style="width: 0%">
+                <div class="h-1.5 bg-gray-200 rounded-full cursor-pointer relative" id="progress-container">
+                    <!-- 缓冲进度条 -->
+                    <div class="h-1.5 bg-gray-300 rounded-full absolute inset-0" id="buffer-bar" style="width: 0%"></div>
+                    <!-- 播放进度条 -->
+                    <div class="h-1.5 bg-indigo-500 rounded-full relative z-10" id="progress-bar" style="width: 0%">
                         <div class="absolute right-0 -top-0.5 w-3 h-3 bg-white rounded-full shadow"></div>
                     </div>
                 </div>
@@ -143,9 +146,11 @@ const finalArtist = artist || 'Yorushika';
         const playerState = {
             isPlaying: false,
             currentTime: 0,
-            duration: 114, // 1:54 in seconds
+            duration: 0, // 将从音频文件动态获取
             volume: 1.0,
-            lastVolume: 0.5
+            lastVolume: 0.5,
+            isMetadataLoaded: false,
+            isCanPlay: false
         };
         
         // DOM 元素
@@ -159,6 +164,7 @@ const finalArtist = artist || 'Yorushika';
         const volumeBar = document.getElementById('volume-bar');
         const progressContainer = document.getElementById('progress-container');
         const progressBar = document.getElementById('progress-bar');
+        const bufferBar = document.getElementById('buffer-bar');
         const currentTimeEl = document.getElementById('current-time');
         const durationEl = document.getElementById('duration');
         const waveContainer = document.getElementById('wave-container');
@@ -170,44 +176,145 @@ const finalArtist = artist || 'Yorushika';
         } else {
             // 初始化音频设置
             audioPlayer.volume = playerState.volume;
+            audioPlayer.preload = 'metadata';
             
-            // 音频加载错误处理
-            audioPlayer.addEventListener('error', (e) => {
-                console.error('音频加载失败:', e);
-                console.error('音频源:', audioPlayer.src);
-                // 可以在这里添加用户友好的错误提示
+            // 初始显示
+            if (durationEl) {
+                durationEl.textContent = '加载中...';
+            }
+            
+            // 音频加载状态监听
+            audioPlayer.addEventListener('loadstart', () => {
+                console.log('开始加载音频');
                 if (durationEl) {
-                    durationEl.textContent = '加载失败';
+                    durationEl.textContent = '加载中...';
+                }
+            });
+            
+            // 音频元数据加载完成
+            audioPlayer.addEventListener('loadedmetadata', () => {
+                console.log('音频元数据加载完成');
+                playerState.duration = audioPlayer.duration;
+                playerState.isMetadataLoaded = true;
+                
+                if (durationEl && !isNaN(audioPlayer.duration) && audioPlayer.duration > 0) {
+                    durationEl.textContent = formatTime(playerState.duration);
+                    console.log('音频时长:', playerState.duration, '秒 (' + formatTime(playerState.duration) + ')');
+                } else {
+                    durationEl.textContent = '未知';
+                    console.warn('无法获取音频时长');
+                }
+            });
+            
+            // 音频数据加载完成，可以播放
+            audioPlayer.addEventListener('loadeddata', () => {
+                console.log('音频数据加载完成');
+                // 如果元数据还没加载，这里再试一次获取时长
+                if (!playerState.isMetadataLoaded && audioPlayer.duration && !isNaN(audioPlayer.duration)) {
+                    playerState.duration = audioPlayer.duration;
+                    playerState.isMetadataLoaded = true;
+                    if (durationEl) {
+                        durationEl.textContent = formatTime(playerState.duration);
+                    }
+                    console.log('从loadeddata获取音频时长:', playerState.duration, '秒');
                 }
             });
             
             // 音频可以播放时
             audioPlayer.addEventListener('canplay', () => {
                 console.log('音频可以播放');
-            });
-            
-            // 当音频元数据加载完成后
-            audioPlayer.addEventListener('loadedmetadata', () => {
-                playerState.duration = audioPlayer.duration;
-                if (durationEl) {
-                    durationEl.textContent = formatTime(playerState.duration);
+                playerState.isCanPlay = true;
+                
+                // 最后一次尝试获取时长
+                if (!playerState.isMetadataLoaded && audioPlayer.duration && !isNaN(audioPlayer.duration)) {
+                    playerState.duration = audioPlayer.duration;
+                    playerState.isMetadataLoaded = true;
+                    if (durationEl) {
+                        durationEl.textContent = formatTime(playerState.duration);
+                    }
+                    console.log('从canplay获取音频时长:', playerState.duration, '秒');
                 }
-                console.log('音频时长:', playerState.duration, '秒');
             });
             
-            // 预加载音频以便获取元数据
-            audioPlayer.preload = 'metadata';
+            // 音频时长改变事件（某些浏览器会触发）
+            audioPlayer.addEventListener('durationchange', () => {
+                console.log('音频时长发生改变');
+                if (audioPlayer.duration && !isNaN(audioPlayer.duration) && audioPlayer.duration > 0) {
+                    playerState.duration = audioPlayer.duration;
+                    playerState.isMetadataLoaded = true;
+                    if (durationEl) {
+                        durationEl.textContent = formatTime(playerState.duration);
+                    }
+                    console.log('从durationchange获取音频时长:', playerState.duration, '秒');
+                }
+            });
+            
+            // 音频加载错误处理
+            audioPlayer.addEventListener('error', (e) => {
+                console.error('音频加载失败:', e);
+                console.error('音频源:', audioPlayer.src);
+                console.error('错误详情:', audioPlayer.error);
+                
+                if (durationEl) {
+                    durationEl.textContent = '加载失败';
+                }
+                
+                // 根据错误类型显示不同信息
+                if (audioPlayer.error) {
+                    switch (audioPlayer.error.code) {
+                        case 1: // MEDIA_ERR_ABORTED
+                            console.error('音频加载被中止');
+                            break;
+                        case 2: // MEDIA_ERR_NETWORK
+                            console.error('网络错误导致音频加载失败');
+                            break;
+                        case 3: // MEDIA_ERR_DECODE
+                            console.error('音频解码失败');
+                            break;
+                        case 4: // MEDIA_ERR_SRC_NOT_SUPPORTED
+                            console.error('音频格式不支持');
+                            break;
+                        default:
+                            console.error('未知音频错误');
+                    }
+                }
+            });
+            
+            // 进度更新事件
+            audioPlayer.addEventListener('progress', () => {
+                // 更新缓冲进度条
+                if (audioPlayer.buffered.length > 0 && playerState.duration > 0) {
+                    const buffered = (audioPlayer.buffered.end(0) / playerState.duration) * 100;
+                    if (bufferBar) {
+                        bufferBar.style.width = `${Math.min(buffered, 100)}%`;
+                    }
+                    console.log('缓冲进度:', buffered.toFixed(1) + '%');
+                }
+            });
         }
         
         // 音频时间更新事件
         audioPlayer.addEventListener('timeupdate', () => {
             playerState.currentTime = audioPlayer.currentTime;
-            const percent = (playerState.currentTime / playerState.duration) * 100;
-            if (progressBar) {
-                progressBar.style.width = `${percent}%`;
-            }
+            
+            // 更新当前时间显示
             if (currentTimeEl) {
                 currentTimeEl.textContent = formatTime(playerState.currentTime);
+            }
+            
+            // 更新进度条（只有当时长有效时才更新）
+            if (playerState.duration > 0 && progressBar) {
+                const percent = (playerState.currentTime / playerState.duration) * 100;
+                progressBar.style.width = `${Math.min(percent, 100)}%`;
+            }
+            
+            // 如果时长还没有获取到，尝试再次获取
+            if (playerState.duration <= 0 && audioPlayer.duration && !isNaN(audioPlayer.duration)) {
+                playerState.duration = audioPlayer.duration;
+                if (durationEl) {
+                    durationEl.textContent = formatTime(playerState.duration);
+                }
+                console.log('从timeupdate获取音频时长:', playerState.duration, '秒');
             }
         });
         
@@ -244,6 +351,14 @@ const finalArtist = artist || 'Yorushika';
         
         // 播放/暂停
         playBtn?.addEventListener('click', () => {
+            // 检查音频是否准备就绪
+            if (!playerState.isCanPlay) {
+                console.warn('音频还未准备好播放');
+                // 尝试强制加载
+                audioPlayer.load();
+                return;
+            }
+            
             playerState.isPlaying = !playerState.isPlaying;
             
             const icon = playBtn.querySelector('i');
@@ -263,14 +378,33 @@ const finalArtist = artist || 'Yorushika';
             
             // 控制音频播放
             if(playerState.isPlaying) {
-                audioPlayer.play().catch(error => {
-                    console.error('播放失败:', error);
-                    playerState.isPlaying = false;
-                    if (icon) {
-                        icon.classList.remove('fa-pause');
-                        icon.classList.add('fa-play');
-                    }
-                });
+                const playPromise = audioPlayer.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('音频播放成功');
+                        // 播放成功后再次尝试获取时长
+                        if (!playerState.isMetadataLoaded && audioPlayer.duration && !isNaN(audioPlayer.duration)) {
+                            playerState.duration = audioPlayer.duration;
+                            playerState.isMetadataLoaded = true;
+                            if (durationEl) {
+                                durationEl.textContent = formatTime(playerState.duration);
+                            }
+                            console.log('播放时获取音频时长:', playerState.duration, '秒');
+                        }
+                    }).catch(error => {
+                        console.error('播放失败:', error);
+                        playerState.isPlaying = false;
+                        if (icon) {
+                            icon.classList.remove('fa-pause');
+                            icon.classList.add('fa-play');
+                        }
+                        // 停止音波动画
+                        waves.forEach(wave => {
+                            (wave as HTMLElement).style.animationPlayState = 'paused';
+                        });
+                    });
+                }
             } else {
                 audioPlayer.pause();
             }
@@ -306,18 +440,30 @@ const finalArtist = artist || 'Yorushika';
         
         // 进度条控制
         progressContainer?.addEventListener('click', (e: MouseEvent) => {
-            const width = progressContainer.clientWidth;
-            const clickX = e.offsetX;
-            const percent = clickX / width;
+            // 只有当音频时长有效时才允许跳转
+            if (playerState.duration <= 0 || !playerState.isMetadataLoaded) {
+                console.warn('音频时长未获取，无法跳转');
+                return;
+            }
             
-            playerState.currentTime = percent * playerState.duration;
-            audioPlayer.currentTime = playerState.currentTime;
+            const rect = progressContainer.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const percent = Math.max(0, Math.min(1, clickX / width));
+            
+            const newTime = percent * playerState.duration;
+            playerState.currentTime = newTime;
+            audioPlayer.currentTime = newTime;
+            
+            // 立即更新显示
             if (progressBar) {
                 progressBar.style.width = `${percent * 100}%`;
             }
             if (currentTimeEl) {
-                currentTimeEl.textContent = formatTime(playerState.currentTime);
+                currentTimeEl.textContent = formatTime(newTime);
             }
+            
+            console.log(`跳转到: ${formatTime(newTime)} (${(percent * 100).toFixed(1)}%)`);
         });
         
         // 静音/取消静音
@@ -356,10 +502,53 @@ const finalArtist = artist || 'Yorushika';
         
         // 格式化时间 (秒 -> MM:SS)
         function formatTime(seconds: number): string {
+            if (!seconds || isNaN(seconds) || seconds < 0) {
+                return '0:00';
+            }
+            
             const mins = Math.floor(seconds / 60);
             const secs = Math.floor(seconds % 60);
             return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
         }
+        
+        // 强制刷新音频时长的辅助函数
+        function refreshAudioDuration(): void {
+            if (audioPlayer && audioPlayer.duration && !isNaN(audioPlayer.duration) && audioPlayer.duration > 0) {
+                playerState.duration = audioPlayer.duration;
+                playerState.isMetadataLoaded = true;
+                if (durationEl) {
+                    durationEl.textContent = formatTime(playerState.duration);
+                }
+                console.log('刷新音频时长:', playerState.duration, '秒');
+                return;
+            }
+            
+            // 如果还是获取不到，尝试重新加载
+            console.log('尝试重新加载音频以获取时长');
+            audioPlayer.load();
+        }
+        
+        // 定时检查音频时长（备用机制）
+        let durationCheckCount = 0;
+        const maxDurationChecks = 20; // 最多检查20次
+        const durationCheckInterval = setInterval(() => {
+            durationCheckCount++;
+            
+            if (playerState.isMetadataLoaded || durationCheckCount >= maxDurationChecks) {
+                clearInterval(durationCheckInterval);
+                if (!playerState.isMetadataLoaded) {
+                    console.warn('音频时长获取超时，可能是网络或文件问题');
+                    if (durationEl) {
+                        durationEl.textContent = '时长未知';
+                    }
+                }
+                return;
+            }
+            
+            if (audioPlayer.readyState >= 1) { // HAVE_METADATA
+                refreshAudioDuration();
+            }
+        }, 500); // 每500ms检查一次
         
         // 初始化
         updateVolumeIcon();
