@@ -17,13 +17,13 @@ export const musicLibrary = {
     artist: "Yorushika"
   },
 
-  // 可以继续添加更多音乐
-  // peaceful_ambient: {
-  //   audioSrc: "/peaceful-ambient.mp3",
-  //   coverSrc: "/peaceful-cover.jpg",
-  //   title: "Peaceful Ambient",
-  //   artist: "Nature Sounds"
-  // }
+  zidaozidao: {
+    audioSrc: "/zidaozidao.mp3", // 暂时使用同一个文件
+    coverSrc: "/zidaozidao.jpg",
+    title: "ずっとずっとずっと",
+    artist: "大橋トリオ"
+  },
+
 };
 
 // 获取音乐配置的辅助函数

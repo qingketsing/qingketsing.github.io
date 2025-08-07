@@ -5,6 +5,10 @@ import MusicPlayer from "../components/MusicPlayer.astro";
 // 从frontmatter中提取音乐配置
 const musicConfig = frontmatter.music;
 const shouldShowPlayer = musicConfig && musicConfig.audioSrc;
+
+// 获取站点基础URL，用于GitHub Pages路径修复
+const siteUrl = Astro.site || '';
+const baseUrl = siteUrl.pathname || '';
 ---
 <!DOCTYPE html>
 <html lang="en">
