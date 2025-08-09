@@ -19,5 +19,9 @@ module.exports = {
   plugins: [
     require('@tailwindcss/typography'),
   ],
+  safelist: [
+    'text-blue-50',
+    // 你还想保留的其它类
+  ],
 }
 
