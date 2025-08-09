@@ -1,0 +1,168 @@
+---
+// 音频调试页面
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频调试页面</title>
+    <link href="/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">音频文件调试页面</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- 音频文件测试 -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">音频文件测试</h2>
+                
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-2">zidaozidao.mp3 (日语歌曲)</h3>
+                    <audio controls class="w-full mb-2">
+                        <source src="/zidaozidao.mp3" type="audio/mpeg">
+                        您的浏览器不支持音频播放。
+                    </audio>
+                    <p class="text-sm text-gray-600">文件路径: /zidaozidao.mp3</p>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-2">8_31.mp3 (默认音频)</h3>
+                    <audio controls class="w-full mb-2">
+                        <source src="/8_31.mp3" type="audio/mpeg">
+                        您的浏览器不支持音频播放。
+                    </audio>
+                    <p class="text-sm text-gray-600">文件路径: /8_31.mp3</p>
+                </div>
+            </div>
+
+            <!-- 图片文件测试 -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">封面图片测试</h2>
+                
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-2">zidaozidao.jpg</h3>
+                    <img src="/zidaozidao.jpg" alt="大橋トリオ - ずっとずっとずっと" class="w-full h-40 object-cover rounded mb-2">
+                    <p class="text-sm text-gray-600">文件路径: /zidaozidao.jpg</p>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-2">yorushika.jpg</h3>
+                    <img src="/yorushika.jpg" alt="Yorushika" class="w-full h-40 object-cover rounded mb-2">
+                    <p class="text-sm text-gray-600">文件路径: /yorushika.jpg</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技术信息 -->
+        <div class="bg-white p-6 rounded-lg shadow mt-8">
+            <h2 class="text-xl font-bold mb-4">技术信息</h2>
+            <div id="debug-info" class="space-y-2 text-sm">
+                <p><strong>当前域名:</strong> <span id="current-domain"></span></p>
+                <p><strong>协议:</strong> <span id="current-protocol"></span></p>
+                <p><strong>用户代理:</strong> <span id="user-agent"></span></p>
+                <p><strong>时间戳:</strong> <span id="timestamp"></span></p>
+            </div>
+        </div>
+
+        <!-- 音频加载测试 -->
+        <div class="bg-white p-6 rounded-lg shadow mt-8">
+            <h2 class="text-xl font-bold mb-4">JavaScript音频加载测试</h2>
+            <div id="audio-test-results" class="space-y-4"></div>
+            <button id="test-audio-loading" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">
+                测试音频加载
+            </button>
+        </div>
+
+        <div class="mt-8">
+            <a href="/" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                返回首页
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // 显示基本信息
+        document.getElementById('current-domain').textContent = window.location.hostname;
+        document.getElementById('current-protocol').textContent = window.location.protocol;
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+
+        // 音频加载测试
+        document.getElementById('test-audio-loading').addEventListener('click', function() {
+            const resultsDiv = document.getElementById('audio-test-results');
+            resultsDiv.innerHTML = '<p class="text-blue-600">正在测试音频加载...</p>';
+
+            const audioFiles = [
+                { name: 'zidaozidao.mp3', path: '/zidaozidao.mp3' },
+                { name: '8_31.mp3', path: '/8_31.mp3' }
+            ];
+
+            const results = [];
+
+            audioFiles.forEach(file => {
+                const audio = new Audio();
+                const result = { name: file.name, path: file.path };
+
+                audio.addEventListener('loadedmetadata', function() {
+                    result.duration = this.duration;
+                    result.status = 'success';
+                    result.message = `加载成功，时长: ${Math.floor(this.duration / 60)}:${Math.floor(this.duration % 60).toString().padStart(2, '0')}`;
+                    updateResults();
+                });
+
+                audio.addEventListener('error', function(e) {
+                    result.status = 'error';
+                    result.message = `加载失败: ${e.message || '未知错误'}`;
+                    result.error = e;
+                    updateResults();
+                });
+
+                audio.addEventListener('canplay', function() {
+                    if (!result.canplay) {
+                        result.canplay = true;
+                        result.canplayMessage = '音频可以播放';
+                        updateResults();
+                    }
+                });
+
+                audio.src = file.path;
+                audio.preload = 'metadata';
+                results.push(result);
+            });
+
+            function updateResults() {
+                let html = '';
+                results.forEach(result => {
+                    const statusColor = result.status === 'success' ? 'text-green-600' : 
+                                      result.status === 'error' ? 'text-red-600' : 'text-yellow-600';
+                    
+                    html += `
+                        <div class="border border-gray-200 rounded p-4">
+                            <h3 class="font-semibold">${result.name}</h3>
+                            <p class="text-sm text-gray-600">路径: ${result.path}</p>
+                            <p class="${statusColor}">${result.message || '等待加载...'}</p>
+                            ${result.canplayMessage ? `<p class="text-blue-600 text-sm">${result.canplayMessage}</p>` : ''}
+                            ${result.duration ? `<p class="text-sm">实际时长: ${result.duration.toFixed(2)} 秒</p>` : ''}
+                        </div>
+                    `;
+                });
+                resultsDiv.innerHTML = html;
+            }
+
+            // 5秒后显示超时结果
+            setTimeout(() => {
+                results.forEach(result => {
+                    if (!result.status) {
+                        result.status = 'timeout';
+                        result.message = '加载超时';
+                    }
+                });
+                updateResults();
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
