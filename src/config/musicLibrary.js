@@ -18,12 +18,18 @@ export const musicLibrary = {
   },
 
   zidaozidao: {
-    audioSrc: "/zidaozidao.mp3", // 暂时使用同一个文件
+    audioSrc: "/zidaozidao.mp3", 
     coverSrc: "/zidaozidao.jpg",
     title: "ずっとずっとずっと",
     artist: "大橋トリオ"
   },
 
+  stay_alive: {
+    audioSrc: "/Stay_alive.mp3",
+    coverSrc: "/Mitty.jpg",
+    title: "Stay Alive",
+    artist: "José González"
+  },
 };
 
 // 获取音乐配置的辅助函数
