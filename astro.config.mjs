@@ -8,5 +8,5 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()]
   },
-  site: 'qingke12138.top',
+  site: 'https://qingke12138.top',
 });
