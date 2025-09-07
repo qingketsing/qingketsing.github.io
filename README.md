@@ -13,7 +13,7 @@
 - **排版**: @tailwindcss/typography
 - **地图**: Leaflet v1.9.4
 - **数学公式**: KaTeX
-- **包管理**: pnpm
+- **包管理**: pnpm v10.14.0
 
 ## 项目结构
 
