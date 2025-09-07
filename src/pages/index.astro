@@ -1,11 +1,207 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import 'leaflet/dist/leaflet.css';
+import '../styles/global.css';
+import ProfileAside from '../components/introduction.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+
+const allPosts = await Astro.glob('../blogs/*.md');
+// 处理数据：提取 frontmatter、添加文章链接，并按时间排序
+const latestPosts = allPosts
+  .map((post: any) => ({
+    ...post.frontmatter,
+    url: `/blog/${post.file.split('/').pop().split('.').shift()}`,
+  })).sort((a: any, b: any) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime()).slice(0, 5);
+
+// 获取当前路径用于导航栏高亮
+const currentPath = Astro.url.pathname;
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+  
+  <ProfileAside />
+
+  <!--利用grid将右侧三分之二的空间分成四列，每列间距为50px -->
+  <div class="grid grid-cols-4 grid-rows-2 gap-12 ml-[500px] mt-[40px] mr-[100px]">
+    <a href="/about" class="row-start-1 col-start-1 col-span-2 bg-gray-400 h-[180px] rounded-lg shadow-lg p-5 hover:bg-primary-focus hover:shadow-gray-500">
+      <div class="pt-5"></div>
+      <h1 class="text-2xl font-bold pl-5 text-gray-50">青稞 @Qingke</h1>
+      <div class="pt-2 xl:pt-5"></div>
+      <p class="text-x pl-5 text-gray-50">/*我想带你遍历世间的美好*/</p>
+      <!--让其中的按钮在hover时有阴影效果-->
+      <div class="pt-2 xl:pt-3 flex justify-end "> 
+        <button class="btn rounded-lg border-0 w-28 h-8 bg-white/20 hover:bg-white/30 shadow-sm hover:shadow-lg transition-all duration-300 text-gray-50 hover:text-white transform hover:-translate-y-0.5">Learn more</button>
+      </div>
+    </a>
+    <a href="/latest" class="row-start-2 col-start-1 col-span-2 bg-green-900 h-[180px] rounded-lg shadow-lg p-5 hover:bg-primary-focus hover:shadow-gray-500">
+      <div class="pt-5"></div>
+      <h1 class="text-2xl font-bold pl-5 text-gray-50">随手写点</h1>
+      <div class="pt-2 xl:pt-3"></div>
+      <p class="text-lg pl-5 text-gray-50">青稞的碎碎念 uwu</p>
+      <div class="pt-2 xl:pt-3 flex justify-end "> 
+        <button class="btn rounded-lg border-0 w-28 h-8 bg-white/20 hover:bg-white/30 shadow-sm hover:shadow-lg transition-all duration-300 text-gray-50 hover:text-white transform hover:-translate-y-0.5">要不要看看呢</button>
+      </div>
+    </a>
+    <div 
+      id="map"
+      class="row-start-1 row-span-2 col-start-3 col-span-2 
+            bg-gray-100 rounded-lg shadow-lg p-5 
+            hover:bg-primary-focus hover:shadow-gray-500
+            h-[420px]">  <!-- 必须设置明确高度 -->
+    </div>
+
+	
+    <!-- 地图依赖 -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        
+    <script is:inline>
+    // 客户端执行代码
+    document.addEventListener('DOMContentLoaded', () => {
+      // 确保 Leaflet 已加载（CDN方式需要保留头部引用）
+      if(typeof L !== 'undefined') {
+        const CUMT_COORDS = [34.215511, 117.144578];
+        
+        const map = L.map('map', {
+          zoomControl: false,
+          attributionControl: false
+        }).setView(CUMT_COORDS, 15);
+        // 高德地图图层
+        L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+          subdomains: ['1','2','3','4']
+        }).addTo(map);
+        // 标记配置
+        const marker = L.marker(CUMT_COORDS, {
+          icon: L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41]
+          })
+        }).addTo(map);
+        marker.bindPopup(`
+          <div class="font-bold text-primary">中国矿业大学南湖校区</div>
+          <div class="text-sm">江苏省徐州市大学路1号</div>
+        `).openPopup();
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+      }
+    });
+    </script>
+  </div>
+  <div class="pt-10 xl:pt-16"></div>
+
+
+  <div class="h-[700px] col-span-4 bg-gray-200 ml-[500px] mr-[100px] rounded-lg shadow-lg p-5 hover:bg-primary-focus hover:shadow-gray-500">
+    <!-- Categories navigation -->
+    <div class="flex space-x-6 mb-8 text-gray-700 font-medium">
+      <a href="/latest" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
+        <div class="font-bold text-2xl content-center items-center pl-6 pt-2">
+          最新
+        </div>
+      </a>
+      <a href="thinking" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
+        <div class="font-bold text-2xl content-center items-center pl-6 pt-2">
+          随想
+        </div>
+      </a>
+      <a href="life" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
+        <div class="font-bold text-2xl content-center items-center pl-6 pt-2">
+          生活
+        </div>
+      </a>
+      <a href="tech" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
+        <div class="font-bold text-2xl content-center items-center pl-6 pt-2">
+          技术
+        </div>
+      </a>
+      <a href="review" class="hover:text-primary w-[100px] h-[50px] bg-gray-50 items-center rounded-lg shadow-md hover:bg-primary-focus hover:shadow-gray-500">
+        <div class="font-bold text-2xl content-center items-center pl-6 pt-2">
+          评测
+        </div>
+      </a>
+    </div>
+    
+    <!-- Article list -->
+    <div class="space-y-6">
+      <!-- Article 1 -->
+      {
+        latestPosts.map((post) => (
+        <div class="group bg-white rounded-lg shadow-md p-4 hover:bg-gray-100 transition duration-300">
+          <a href={post.url} class="text-lg font-semibold group-hover:text-primary block mb-1" >
+            {post.title}
+          </a>
+          <p class="text-gray-600 text-sm">{post.pubDate}</p>
+        </div>
+        ))
+      }
+
+     
+      <!--查看更多div，靠白框的右下角用dev模仿一个按钮，外部为gray-200，hover之后变为400-->
+      <div class="flex justify-end">
+        <a href="/latest" class="text-gray-600 hover:text-primary font-semibold">
+          <div class="w-[100px] h-[40px] bg-gray-200 rounded-lg shadow-md hover:bg-gray-400 flex items-center justify-center transition duration-300">
+            <span class="text-lg">查看更多</span>
+          </div>
+        </a>
+    </div>
+  </div>
+  </div>
+  <div class="pt-12 xl:pt-28"></div>
+  <div class="h-[100px] col-span-4 bg-white ml-[500px] mr-[100px] rounded-lg p-5 ">
+    <!-- 增强版实现 -->
+    <div class="flex justify-center items-start h-full relative group">
+      <div class="w-[200px] h-[10px] bg-green-500 rounded-lg shadow-md transition-all duration-300 group-hover:w-[220px]"></div>
+      <div class="absolute top-8 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-800 font-bold">
+        <span class="text-3xl">个人项目</span>
+      </div>      
+    </div>
+  </div>
+  <div class="h-[600px] col-span-4 bg-white ml-[500px] mr-[100px] rounded-lg p-5 ">
+    <div class="grid grid-cols-3 gap-6">
+      <div class="bg-gray-100 h-[200px] rounded-lg shadow-md p-4 hover:bg-primary-focus hover:shadow-gray-500 duration-300 hover:scale-105
+              border-2 border-gray-100 hover:border-green-200
+              flex flex-col items-center justify-center cursor-pointer">
+        <div class="text-xl font-bold text-gray-800 mb-2">虽然没有项目</div>
+        <p class="text-gray-600">但是我可以先占个空</p>
+      </div>
+      <div class="bg-gray-100 h-[200px] rounded-lg shadow-md p-4 hover:bg-primary-focus hover:shadow-gray-500 duration-300 hover:scale-105
+              border-2 border-gray-100 hover:border-blue-200
+              flex flex-col items-center justify-center cursor-pointer">
+        <div class="text-xl font-bold text-gray-800 mb-2">虽然没有项目</div>
+        <p class="text-gray-600">但是我可以先占个空</p>
+        
+      </div>
+      <div class="bg-gray-100 h-[200px] rounded-lg shadow-md p-4 hover:bg-primary-focus hover:shadow-gray-500 duration-300 hover:scale-105
+              border-2 border-gray-100 hover:border-red-300
+              flex flex-col items-center justify-center cursor-pointer">
+        <div class="text-xl font-bold text-gray-800 mb-2">虽然没有项目</div>
+        <p class="text-gray-600">但是我可以先占个空</p>
+      </div>
+      <div class="bg-gray-100 h-[200px] rounded-lg shadow-md p-4 hover:bg-primary-focus hover:shadow-gray-500 duration-300 hover:scale-105
+              border-2 border-gray-100 hover:border-green-200
+              flex flex-col items-center justify-center cursor-pointer">
+        <div class="text-xl font-bold text-gray-800 mb-2">虽然没有项目</div>
+        <p class="text-gray-600">但是我可以先占个空</p>
+      </div>
+      <div class="bg-gray-100 h-[200px] rounded-lg shadow-md p-4 hover:bg-primary-focus hover:shadow-gray-500 duration-300 hover:scale-105
+              border-2 border-gray-100 hover:border-blue-200
+              flex flex-col items-center justify-center cursor-pointer">
+        <div class="text-xl font-bold text-gray-800 mb-2">虽然没有项目</div>
+        <p class="text-gray-600">但是我可以先占个空</p>
+        
+      </div>
+      <div class="bg-gray-100 h-[200px] rounded-lg shadow-md p-4 hover:bg-primary-focus hover:shadow-gray-500 duration-300 hover:scale-105
+              border-2 border-gray-100 hover:border-red-300
+              flex flex-col items-center justify-center cursor-pointer">
+        <div class="text-xl font-bold text-gray-800 mb-2">虽然没有项目</div>
+        <p class="text-gray-600">但是我可以先占个空</p>
+      </div>
+  </div>
+
+</body>
+</html>
