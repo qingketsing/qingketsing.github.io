@@ -1,0 +1,142 @@
+---
+// 导航栏组件
+export interface Props {
+  currentPath?: string;
+}
+
+const { currentPath } = Astro.props;
+
+// 导航项目配置
+const navItems = [
+  { name: '首页', href: '/' },
+  { name: '关于', href: '/about'},
+  { name: '最新', href: '/latest'},
+  { name: '技术', href: '/tech'},
+  { name: '生活', href: '/life' },
+  { name: '思考', href: '/thinking' },
+  { name: '回顾', href: '/review' }
+];
+
+// 检查当前路径是否匹配
+function isActive(href: string, currentPath: string | undefined) {
+  if (!currentPath) return false;
+  if (href === '/' && currentPath === '/') return true;
+  if (href !== '/' && currentPath.startsWith(href)) return true;
+  return false;
+}
+
+
+---
+
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-3 items-center h-16">
+      <!-- Logo/Brand -->
+      <div class="justify-self-start">
+        <a href="/" class="inline-flex items-center space-x-2 text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors">
+          <span class="text-2xl"></span>
+          <span>Qingke</span>
+        </a>
+      </div>
+      
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center justify-center space-x-1" style="writing-mode: horizontal-tb; direction: ltr;">
+        {navItems.map((item) => (
+          <a 
+            href={item.href}
+            class={`py-2 rounded-lg text-l font-medium transition-all duration-200 ${
+              isActive(item.href, currentPath) 
+                ? 'bg-blue-100 text-blue-700 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+            style="writing-mode: horizontal-tb; direction: ltr; display: inline-block; width: 50px; text-align: center;"
+          >
+            <span style="writing-mode: horizontal-tb; direction: ltr; display: inline;">{item.name}</span>
+          </a>
+        ))}
+      </div>
+      
+      <!-- Mobile menu button -->
+      <div class="md:hidden justify-self-end">
+        <button 
+          id="mobile-menu-button"
+          class="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          aria-label="打开菜单"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Mobile Navigation Menu -->
+    <div id="mobile-menu" class="hidden md:hidden pb-4">
+      <div class="flex flex-wrap gap-2 justify-center ">
+        {navItems.map((item) => (
+          <a 
+            href={item.href}
+            class={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              isActive(item.href, currentPath) 
+                ? 'bg-blue-100 text-blue-700 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            <span>{item.name}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  // 移动端菜单切换
+  document.addEventListener('DOMContentLoaded', () => {
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (mobileMenuButton && mobileMenu) {
+      mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+      
+      // 点击菜单项后关闭移动端菜单
+      const menuItems = mobileMenu.querySelectorAll('a');
+      menuItems.forEach(item => {
+        item.addEventListener('click', () => {
+          mobileMenu.classList.add('hidden');
+        });
+      });
+    }
+  });
+</script>
+
+<style>
+  /* 平滑滚动 */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* 导航栏动画效果 */
+  nav {
+    transition: all 0.3s ease;
+    writing-mode: horizontal-tb;
+    direction: ltr;
+  }
+  
+  /* 确保导航栏文字横向显示 */
+  nav a, nav span, nav button {
+    writing-mode: horizontal-tb;
+    direction: ltr;
+    text-orientation: mixed;
+  }
+  
+  /* 响应式字体调整 */
+  @media (max-width: 640px) {
+    nav .max-w-7xl {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+</style>

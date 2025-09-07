@@ -1,0 +1,140 @@
+---
+import Navi from '../../components/Navi.astro';
+import '../../styles/global.css';
+
+export async function getStaticPaths() {
+  const posts: any[] = await Astro.glob('../../blogs/*.md');
+  return posts.map((post: any) => ({
+    params: { slug: post.file.split('/').pop().split('.').shift() },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { title, description, pubDate, author, tags } = post.frontmatter;
+const { Content } = post;
+
+// 格式化日期
+function formatDate(date: string | Date) {
+  return new Date(date).toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+// 获取当前路径用于导航栏高亮
+const currentPath = Astro.url.pathname;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title} </title>
+  <meta name="description" content={description || '青稞的个人博客'}>
+  
+  <!-- KaTeX 支持 -->
+  <link rel="stylesheet" href="/katex/katex.min.css">
+  <script defer src="/katex/katex.min.js"></script>
+  <script defer src="/katex/contrib/auto-render.min.js"></script>
+  
+  <style>
+    /* 文章段落首行缩进 */
+    .prose p {
+      text-indent: 2em;
+      margin-top: 1.25em;
+      margin-bottom: 1.25em;
+    }
+    
+    /* 确保第一段不缩进 */
+    .prose > p:first-child,
+    .prose > div:first-child p:first-child {
+      text-indent: 0;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen pt-16">
+  <!-- 导航栏 -->
+  <Navi currentPath={currentPath} />
+  
+  <!-- 主要内容区域 -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <article class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <!-- 文章头部 -->
+      <header class="px-6 py-8 sm:px-8 sm:py-10 border-b border-gray-200">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+            {title}
+          </h1>
+          
+          <!-- 文章元信息 -->
+          <div class="flex flex-wrap items-center text-sm text-gray-600 space-x-6">
+            <div class="flex items-center space-x-2">
+              <span class="text-blue-600">👤</span>
+              <span>{author || '青稞'}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-green-600">📅</span>
+              <time datetime={pubDate}>{formatDate(pubDate)}</time>
+            </div>
+          </div>
+          
+        </div>
+      </header>
+      
+      <!-- 文章内容 -->
+      <div class="px-6 sm:px-8 py-8">
+        <div class="prose prose-lg dark:prose-invert max-w-none
+                            prose-a:text-blue-600 dark:prose-a:text-blue-400
+                            prose-pre:rounded-xl prose-pre:bg-slate-900 prose-pre:shadow-lg dark:prose-pre:bg-slate-800
+                            prose-code:rounded prose-code:px-1 prose-code:py-0.5 dark:prose-code:bg-slate-800 prose-code:before:content-none prose-code:after:content-none
+                            prose-table:text-sm
+                            dark:prose-th:bg-gray-800  prose-th:text-gray-900 dark:prose-th:text-gray-100">
+          <Content />
+        </div>
+      </div>
+    </article>
+    
+    <!-- 返回按钮 -->
+    <div class="mt-8 flex justify-center">
+      <a 
+        href="/latest" 
+        class="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        <span>返回文章列表</span>
+      </a>
+    </div>
+  </main>
+  
+  <!-- 页脚 -->
+  <footer class="mt-16 py-8 border-t border-gray-200 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-600">
+      <p>&copy; 2025 Created by 青稞</p>
+    </div>
+  </footer>
+  
+  <!-- KaTeX 自动渲染 -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // @ts-ignore
+      if (typeof renderMathInElement !== 'undefined') {
+        // @ts-ignore
+        renderMathInElement(document.body, {
+          delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "$", right: "$", display: false},
+            {left: "\\[", right: "\\]", display: true},
+            {left: "\\(", right: "\\)", display: false}
+          ]
+        });
+      }
+    });
+  </script>
+</body>
+</html>
