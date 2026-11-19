@@ -1,113 +1,41 @@
-# Virtual Venus 🌟
+# Jiawei Liu 的个人网站
 
-一个基于 Astro 构建的现代化个人博客网站，使用 Tailwind CSS 进行样式设计。
+[查看网站](https://qingketsing.github.io/) · [全部文章](https://qingketsing.github.io/latest/) · [RSS](https://qingketsing.github.io/rss.xml)
 
-## 项目简介
+文章原稿在 `src/blogs/`。Python 在发布时将 Markdown 和 HTML 模板生成静态页面，浏览器直接读取 HTML 和 CSS。
 
-本项目是一个静态博客网站，专注于分享技术、生活、思考和回顾等内容。网站采用现代化的设计理念，支持响应式布局，为读者提供良好的阅读体验。
+## 本地预览
 
-## 技术栈
+使用 Python 3.12，在项目根目录运行以下命令。
 
-- **框架**: [Astro](https://astro.build/) v5.13.5
-- **样式**: [Tailwind CSS](https://tailwindcss.com/) v4.1.12
-- **排版**: @tailwindcss/typography
-- **地图**: Leaflet v1.9.4
-- **数学公式**: KaTeX
-- **包管理**: pnpm v10.14.0
-
-## 项目结构
-
-```
-virtual-venus/
-├── public/                    # 静态资源
-│   ├── *.jpg, *.png          # 图片资源
-│   ├── *.mp3                 # 音频文件
-│   └── katex/                # KaTeX 数学公式渲染库
-├── src/
-│   ├── assets/               # 项目资源
-│   ├── components/           # 组件目录
-│   │   ├── Navi.astro       # 导航栏组件
-│   │   └── introduction.astro # 介绍组件
-│   ├── layouts/              # 布局模板
-│   ├── pages/                # 页面目录
-│   │   ├── index.astro      # 首页
-│   │   ├── about.astro      # 关于页面
-│   │   ├── latest.astro     # 最新文章
-│   │   ├── tech.astro       # 技术文章
-│   │   ├── life.astro       # 生活随笔
-│   │   ├── thinking.astro   # 思考文章
-│   │   ├── review.astro     # 回顾文章
-│   │   └── blog/
-│   │       └── [slug].astro # 动态博客页面
-│   ├── blogs/                # Markdown 博客文章
-│   └── styles/
-│       └── global.css       # 全局样式
-├── astro.config.mjs          # Astro 配置
-├── tailwind.config.mjs       # Tailwind 配置
-├── tsconfig.json            # TypeScript 配置
-└── package.json             # 项目依赖
+```sh
+python -m pip install -r requirements.txt
+python build.py
+python -m http.server 8000 --bind 127.0.0.1 --directory dist
 ```
 
-### 安装依赖
-```bash
-pnpm install
+打开 <http://127.0.0.1:8000/>。修改原稿、模板或样式后，重新运行 `python build.py` 并刷新页面。推送到 `master` 后，GitHub Actions 自动构建并发布到 GitHub Pages。
+
+## 写文章
+
+在 `src/blogs/` 中添加 UTF-8 编码的 Markdown 文件，文件名决定文章的永久链接 `/blog/文件名/`。已有文章可修改标题，保留原文件名即可沿用历史链接。
+
+```markdown
+---
+title: "文章标题"
+pubDate: 2026-11-19
+author: "青稞"
+type: "随想"
+---
+
+这里是正文。
 ```
 
-### 开发模式
-```bash
-pnpm dev
-```
-访问 http://localhost:4321
+原站的 `auther` 字段和斜线日期格式同样可用。分类有技术、生活、随想和评测。带配乐的文章可沿用原稿里的 `music` 字段，音频和封面放在 `public/`。首页显示最新四篇，归档和 RSS 收录全部文章。
 
-### 构建生产版本
-```bash
-pnpm build
-```
+## 调整页面
 
-### 预览生产版本
-```bash
-pnpm preview
-```
-
-## 内容管理
-
-### 添加新文章
-1. 在 `src/blogs/` 目录下创建新的 `.md` 文件
-2. 文件头部添加 frontmatter：
-   ```yaml
-   ---
-   title: "文章标题"
-   pubDate: "2025-01-01"
-   description: "文章描述"
-   author: "作者"
-   category: "tech" # tech, life, thinking, review
-   tags: ["标签1", "标签2"]
-   ---
-   ```
-3. 编写文章内容
-
-### 博客分类
-- **tech**: 技术相关文章
-- **life**: 生活随笔和日常分享
-- **thinking**: 思考和观点文章
-- **review**: 回顾和总结文章
-
-## 自定义配置
-
-### 导航栏
-在 `src/components/Navi.astro` 中修改导航项：
-```javascript
-const navItems = [
-  { name: '首页', href: '/' },
-  { name: '关于', href: '/about'},
-  // 添加更多导航项
-];
-```
-
-### 样式定制
-- 全局样式：`src/styles/global.css`
-- Tailwind 配置：`tailwind.config.mjs`
-- 组件样式：在各个 `.astro` 文件的 `<style>` 标签中
-
-
-欢迎提交 Issue 和 Pull Request 来改进这个项目。
+- `templates/home.html` 和 `templates/about.html` 分别维护首页和关于页。
+- `templates/base.html` 维护共用的页眉、导航和页脚。
+- `public/site.css` 控制排版和移动端布局。
+- `dist/` 是可重新生成的发布目录。

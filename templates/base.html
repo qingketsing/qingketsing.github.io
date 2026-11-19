@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if title %}{{ title }} · {% endif %}Jiawei Liu</title>
+  <meta name="description" content="{{ description|default('青稞的个人博客，记录技术、生活与随想。') }}">
+  <link rel="canonical" href="{{ site_url }}{{ path }}">
+  <link rel="icon" href="/mark.svg" type="image/svg+xml">
+  <link rel="alternate" type="application/rss+xml" title="Jiawei Liu" href="/rss.xml">
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">跳到正文</a>
+  <header class="frame masthead">
+    <a class="wordmark" href="/" lang="en">Jiawei Liu <i class="mark" aria-hidden="true"></i></a>
+    <nav aria-label="主导航">
+      {% for url, label in [('/', '首页'), ('/latest/', '文章'), ('/about/', '关于')] %}
+      <a href="{{ url }}"{% if path == url %} aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+  </header>
+  <main id="main" class="main {% block page_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="frame colophon">
+    <div class="contacts">
+      <a href="https://github.com/qingketsing">GitHub</a><span aria-hidden="true">·</span>
+      <a href="mailto:ljw329426@163.com">Email</a><span aria-hidden="true">·</span>
+      <a href="/rss.xml">RSS</a>
+    </div>
+    <span lang="en">© {{ year }} Jiawei Liu</span>
+  </footer>
+</body>
+</html>

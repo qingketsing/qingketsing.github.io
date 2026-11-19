@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% from 'list.html' import post_list %}
+{% block page_class %}archive{% endblock %}
+{% block content %}
+<h1>文章</h1>
+<nav class="categories" aria-label="文章分类">
+  {% for url, label in categories.items() %}
+  <a href="{{ url }}"{% if url == path %} aria-current="page"{% endif %}>{{ label }}</a>
+  {% endfor %}
+</nav>
+{% for year, group in posts|groupby('date.year')|reverse %}
+<section class="year">
+  <h2>{{ year }}</h2>
+  {{ post_list(group) }}
+</section>
+{% else %}
+<p>这个分类还没有文章。</p>
+{% endfor %}
+{% endblock %}

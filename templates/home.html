@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% from 'list.html' import post_list %}
+{% block page_class %}home{% endblock %}
+{% block content %}
+<header class="intro" lang="en">
+  <h1>Jiawei Liu</h1>
+  <p>Stay curious<span class="teal">.</span> Build cool things<span class="gold">.</span> Make a difference.</p>
+</header>
+<section class="recent" aria-labelledby="recent-title">
+  <div class="section-head">
+    <h2 id="recent-title">最近的文章</h2>
+    <a class="all-posts" href="/latest/">全部文章 <span aria-hidden="true">→</span></a>
+  </div>
+  {{ post_list(posts[:4]) }}
+</section>
+<section class="projects" aria-labelledby="projects-title">
+  <h2 id="projects-title">项目</h2>
+  <p><a href="https://github.com/juicedata/juicefs">JuiceFS</a> <span class="dash">—</span> 高性能分布式文件系统</p>
+</section>
+{% endblock %}

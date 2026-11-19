@@ -1,0 +1,10 @@
+{% macro post_list(posts) %}
+<ul class="post-list">
+  {% for post in posts %}
+  <li>
+    <a href="{{ post.url }}"><span>{{ post.title }}</span>
+      <time datetime="{{ post.date.isoformat() }}">{{ post.date.strftime('%Y.%m.%d') }}</time></a>
+  </li>
+  {% endfor %}
+</ul>
+{% endmacro %}

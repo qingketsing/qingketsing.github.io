@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block page_class %}reading{% endblock %}
+{% block content %}
+<article>
+  <header class="article-head">
+    <h1>{{ post.title }}</h1>
+    <p class="metadata">
+      <span>{{ post.author }}</span><span aria-hidden="true">·</span>
+      <time datetime="{{ post.date.isoformat() }}">{{ post.date.strftime('%Y.%m.%d') }}</time>
+      {% if post.category %}<span aria-hidden="true">·</span><span>{{ post.category }}</span>{% endif %}
+    </p>
+  </header>
+  <div class="prose">{{ post.html|safe }}</div>
+  {% if post.music %}
+  <figure class="music">
+    <img src="{{ post.music.coverSrc }}" width="60" height="60" alt="" loading="lazy">
+    <figcaption><strong>{{ post.music.title }}</strong><span>{{ post.music.artist }}</span></figcaption>
+    <audio controls preload="none" src="{{ post.music.audioSrc }}" aria-label="{{ post.music.title }}">您的浏览器无法播放这段音频。</audio>
+  </figure>
+  {% endif %}
+</article>
+<p class="back"><a href="/latest/">返回全部文章</a></p>
+{% endblock %}
